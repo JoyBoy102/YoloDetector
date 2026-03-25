@@ -48,6 +48,7 @@ namespace YoloDetector.ViewModels
             set => SetProperty(ref _currentFrame, value);
         }
 
+        /*ЗДЕСЬ ТОЖЕ ПОД СЕРВЕР АДАПТИРОВАТЬ*/
         public async Task OnSelectedCameraChangedAsync()
         {
             _cts?.Cancel();

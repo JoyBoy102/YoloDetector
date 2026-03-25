@@ -37,6 +37,7 @@ namespace YoloDetector.Models
             };
         }
 
+        /*ВСЕ ЭТИ ФУНКЦИИ ПОТОМ НА СЕРВЕРЕ НАДО БУДЕТ ДЕЛАТЬ */
         public BitmapSource MatToBitmapSource(Mat mat)
         {
             // Способ 1: Конвертация через Bitmap
