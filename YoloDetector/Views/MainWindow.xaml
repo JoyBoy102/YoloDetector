@@ -1,0 +1,41 @@
+﻿<Window x:Class="YoloDetector.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:YoloDetector"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800"
+        xmlns:vm="clr-namespace:YoloDetector.ViewModels">
+    <Window.DataContext>
+        <vm:MainWindowViewModel />
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="0.25*"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Image x:Name="CameraImage" 
+               Grid.Row="0" 
+               Stretch="Uniform"
+               Source="{Binding CurrentFrame}"/>
+        
+        <ListBox Grid.Row="1" ItemsSource="{Binding AllCameras}" SelectedItem="{Binding SelectedCamera}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <TextBlock Text="{Binding CameraID}" Width="50" />
+                        <TextBlock Text="{Binding IsPlaying}" Width="150" FontWeight="Bold" />
+                        <TextBlock Text="{Binding VideoPath}" Width="120" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Window>
