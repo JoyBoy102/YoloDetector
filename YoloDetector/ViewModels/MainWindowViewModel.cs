@@ -1,4 +1,5 @@
-﻿using Emgu.CV;
+﻿using CommunityToolkit.Mvvm.Input;
+using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using YoloDetector.Models;
 using YoloDetector.Structures;
+using YoloDetector.AdditionalWindows;
 
 namespace YoloDetector.ViewModels
 {
@@ -18,10 +20,23 @@ namespace YoloDetector.ViewModels
         private VideoCapture _capture;
         private CancellationTokenSource _cts;
         private CameraStructure _selectedCamera;
-        private BitmapSource _currentFrame;
+        public IAsyncRelayCommand AddCameraCommand { get; set; }
         public MainWindowViewModel()
         {
             _mainModel = new MainWindowModel();
+            AddCameraCommand = new AsyncRelayCommand(AddCamera);
+        }
+
+        public static async Task<MainWindowViewModel> CreateAsync()
+        {
+            var instance = new MainWindowViewModel();
+            await instance.InitializeAsync();
+            return instance;
+        }
+
+        private async Task InitializeAsync()
+        {
+            await _mainModel.StartAllCamerasAsync();
         }
 
         public ObservableCollection<CameraStructure> AllCameras
@@ -37,57 +52,28 @@ namespace YoloDetector.ViewModels
             {
                 if (SetProperty(ref _selectedCamera, value))
                 {
-                    _ = OnSelectedCameraChangedAsync();
+                   // _ = OnSelectedCameraChangedAsync();
                 }
             }
         }
 
-        public BitmapSource CurrentFrame
-        {
-            get => _currentFrame;
-            set => SetProperty(ref _currentFrame, value);
-        }
-
-        /*ЗДЕСЬ ТОЖЕ ПОД СЕРВЕР АДАПТИРОВАТЬ*/
         public async Task OnSelectedCameraChangedAsync()
         {
-            _cts?.Cancel();
-            _capture?.Dispose();
-            if (_selectedCamera != null)
-            {
-                _cts = new CancellationTokenSource();
-                _capture = new VideoCapture(SelectedCamera.VideoPath);
-                await StartProcessFrames(_capture, _cts.Token);
-            }
+           // _cts?.Cancel();
+           // _capture?.Dispose();
+          //  if (_selectedCamera != null)
+          //  {
+          //      _cts = new CancellationTokenSource();
+          //      _capture = new VideoCapture(SelectedCamera.VideoPath);
+          //      await StartProcessFrames(_capture, _cts.Token);
+          //  }
         }
 
-        public async Task StartProcessFrames(VideoCapture capture, CancellationToken token)
+        private async Task AddCamera()
         {
-            while (!token.IsCancellationRequested)
-            {
-                using (Mat frame = new Mat())
-                {
-                    capture.Read(frame);
-
-                    if (!frame.IsEmpty)
-                    {
-                        var bitmapSource = _mainModel.MatToBitmapSource(frame);
-
-                        await Application.Current.Dispatcher.InvokeAsync(() =>
-                        {
-                            CurrentFrame = bitmapSource;
-                        });
-                    }
-                    else
-                    {
-                        await Task.Delay(10, token);
-                    }
-                }
-                await Task.Delay(33, token);
-            }
-
+            var res = await _mainModel.AddCamera();
+            if (res) OnPropertyChanged(nameof(AllCameras));
         }
-
 
     }
 }

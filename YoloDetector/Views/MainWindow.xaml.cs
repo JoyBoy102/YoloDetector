@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using YoloDetector.ViewModels;
 
 namespace YoloDetector
 {
@@ -19,6 +20,13 @@ namespace YoloDetector
         public MainWindow()
         {
             InitializeComponent();
+            InitializeViewModelAsync();
+        }
+
+        private async Task InitializeViewModelAsync()
+        {
+            var viewModel = await MainWindowViewModel.CreateAsync();
+            DataContext = viewModel;
         }
     }
 }

@@ -6,10 +6,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Printing;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using YoloDetector.AdditionalWindows;
+using YoloDetector.Services;
 using YoloDetector.Structures;
 
 namespace YoloDetector.Models
@@ -17,80 +20,62 @@ namespace YoloDetector.Models
     public class MainWindowModel
     {
         public ObservableCollection<CameraStructure> Cameras;
-
         public MainWindowModel()
         {
             Cameras = new ObservableCollection<CameraStructure>()
             {
                 new CameraStructure
                 {
-                    CameraID = 0,
                     IsPlaying = true,
-                    VideoPath = "C:\\Users\\Ainur\\source\\repos\\YoloDetector\\YoloDetector\\bin\\Debug\\net10.0-windows\\video.mp4"
+                    CurrentFrame = null,
+                    Capture = new VideoCapture("C:\\Users\\Ainur\\source\\repos\\YoloDetector\\YoloDetector\\bin\\Debug\\net10.0-windows\\video.mp4"),
+                    CancellationTokenSource = new CancellationTokenSource(),
+                    CameraName = "Стройка"
                 },
                 new CameraStructure
                 {
-                    CameraID = 1,
                     IsPlaying = false,
-                    VideoPath = "C:\\Users\\Ainur\\source\\repos\\YoloDetector\\YoloDetector\\bin\\Debug\\net10.0-windows\\video.mp4"
+                    CurrentFrame = null,
+                    Capture = new VideoCapture("C:\\Users\\Ainur\\source\\repos\\YoloDetector\\YoloDetector\\bin\\Debug\\net10.0-windows\\video2.mp4"),
+                    CancellationTokenSource = new CancellationTokenSource(),
+                    CameraName = "Подъезд"
                 }
             };
+            
         }
 
-        /*ВСЕ ЭТИ ФУНКЦИИ ПОТОМ НА СЕРВЕРЕ НАДО БУДЕТ ДЕЛАТЬ */
-        public BitmapSource MatToBitmapSource(Mat mat)
+        public async Task StartAllCamerasAsync()
         {
-            // Способ 1: Конвертация через Bitmap
-            using (Bitmap bitmap = mat.ToBitmap())
+            foreach (var camera in Cameras)
             {
-                return ConvertBitmapToBitmapSource(bitmap);
+                _ = camera.StartProcessFramesAsync();
             }
         }
 
-        private BitmapSource ConvertBitmapToBitmapSource(Bitmap bitmap)
+        public async Task<bool> AddCamera()
         {
-            // Получаем данные Bitmap
-            var bitmapData = bitmap.LockBits(
-                new Rectangle(0, 0, bitmap.Width, bitmap.Height),
-                ImageLockMode.ReadOnly,
-                bitmap.PixelFormat);
+            AddCameraWindow addCameraWindow = new AddCameraWindow();
+            addCameraWindow.Owner = Application.Current.MainWindow;
+            bool? result = addCameraWindow.ShowDialog();
 
-            // Создаем BitmapSource
-            var bitmapSource = BitmapSource.Create(
-                bitmapData.Width,
-                bitmapData.Height,
-                96, 96, // DPI
-                GetPixelFormat(bitmap.PixelFormat),
-                null,
-                bitmapData.Scan0,
-                bitmapData.Stride * bitmapData.Height,
-                bitmapData.Stride);
-
-            // Освобождаем ресурсы
-            bitmap.UnlockBits(bitmapData);
-
-            // Замораживаем для улучшения производительности
-            bitmapSource.Freeze();
-
-            return bitmapSource;
-        }
-
-        private System.Windows.Media.PixelFormat GetPixelFormat(PixelFormat pixelFormat)
-        {
-            // Преобразование System.Drawing.PixelFormat в System.Windows.Media.PixelFormat
-            switch (pixelFormat)
+            if (result == true) // Пользователь нажал OK
             {
-                case PixelFormat.Format24bppRgb:
-                    return System.Windows.Media.PixelFormats.Bgr24;
-                case PixelFormat.Format32bppRgb:
-                    return System.Windows.Media.PixelFormats.Bgr32;
-                case PixelFormat.Format32bppArgb:
-                    return System.Windows.Media.PixelFormats.Bgra32;
-                case PixelFormat.Format8bppIndexed:
-                    return System.Windows.Media.PixelFormats.Gray8;
-                default:
-                    return System.Windows.Media.PixelFormats.Bgr24;
+                string cameraName = addCameraWindow.CameraName;
+                string videoPath = addCameraWindow.VideoPath;
+                CameraStructure cameraStructure = new CameraStructure
+                {
+                    CameraName = cameraName,
+                    CancellationTokenSource = new CancellationTokenSource(),
+                    Capture = new VideoCapture(videoPath),
+                    CurrentFrame = null,
+                    IsPlaying = true
+                };
+                _ = cameraStructure.StartProcessFramesAsync();
+                Cameras.Add(cameraStructure);
+                return true;
             }
+            return false;
+
         }
 
     }

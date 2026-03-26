@@ -5,37 +5,84 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:YoloDetector"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
-        xmlns:vm="clr-namespace:YoloDetector.ViewModels">
-    <Window.DataContext>
-        <vm:MainWindowViewModel />
-    </Window.DataContext>
+        Title="MainWindow" Height="600" Width="1280"
+        xmlns:vm="clr-namespace:YoloDetector.ViewModels"
+        d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
+        FontWeight="DemiBold">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="0.15*"></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition Height="0.25*"></RowDefinition>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition Width="0.45*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
 
-        <Image x:Name="CameraImage" 
-               Grid.Row="0" 
-               Stretch="Uniform"
-               Source="{Binding CurrentFrame}"/>
-        
-        <ListBox Grid.Row="1" ItemsSource="{Binding AllCameras}" SelectedItem="{Binding SelectedCamera}">
+        <ToolBar Grid.Row="0" Grid.ColumnSpan="2" Height="80" Margin="5">
+            <Button Width="100" Height="70" Margin="5" Command="{Binding AddCameraCommand}">
+                <StackPanel>
+                    <TextBlock Text="Add Camera" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Button>
+
+            <Button Width="100" Height="70" Margin="5">
+                <StackPanel>
+                    <TextBlock Text="Options" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Button>
+
+        </ToolBar>
+
+        <ListBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding AllCameras}" SelectedItem="{Binding SelectedCamera}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" />
+                    <WrapPanel Orientation="Horizontal"/>
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal" Margin="5">
-                        <TextBlock Text="{Binding CameraID}" Width="50" />
-                        <TextBlock Text="{Binding IsPlaying}" Width="150" FontWeight="Bold" />
-                        <TextBlock Text="{Binding VideoPath}" Width="120" />
-                    </StackPanel>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="0.2*"></RowDefinition>
+                            <RowDefinition></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" Width="180" Height="20" BorderBrush="Black" BorderThickness="1" Background="Coral">
+                            <TextBlock Text="{Binding CameraName}"></TextBlock>
+                        </Border>
+                        <Border Grid.Row="1" 
+                                BorderBrush="Black" 
+                                BorderThickness="1"
+                                MaxWidth="180"
+                                HorizontalAlignment="Center">
+                                                    <Image Source="{Binding CurrentFrame}" 
+                                                           Stretch="Uniform"
+                                                           Width="Auto"
+                                                           Height="Auto"/>
+                        </Border>
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+
+        <Grid Grid.Row="1" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.05*"></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" Width="Auto" Height="Auto" BorderBrush="Black" BorderThickness="1" Background="Coral">
+                <TextBlock Text="{Binding SelectedCamera.CameraName}"></TextBlock>
+            </Border>
+            <Border Grid.Row="1" 
+                    BorderBrush="Black" 
+                    BorderThickness="1"
+                    HorizontalAlignment="Center">
+                <Image Source="{Binding SelectedCamera.CurrentFrame}" 
+                                       Width="Auto"
+                                       Height="Auto"
+                                       Stretch="Fill"/>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
