@@ -20,27 +20,25 @@ namespace YoloDetector.Models
     public class MainWindowModel
     {
         public ObservableCollection<CameraStructure> Cameras;
+        private ApiService _apiService;
         public MainWindowModel()
         {
             Cameras = new ObservableCollection<CameraStructure>()
             {
                 new CameraStructure
                 {
-                    IsPlaying = true,
                     CurrentFrame = null,
-                    Capture = new VideoCapture("C:\\Users\\Ainur\\source\\repos\\YoloDetector\\YoloDetector\\bin\\Debug\\net10.0-windows\\video.mp4"),
-                    CancellationTokenSource = new CancellationTokenSource(),
-                    CameraName = "Стройка"
+                    CurrentStreamUri = "stream",
+                    CameraName = "Стройка",
                 },
                 new CameraStructure
                 {
-                    IsPlaying = false,
                     CurrentFrame = null,
-                    Capture = new VideoCapture("C:\\Users\\Ainur\\source\\repos\\YoloDetector\\YoloDetector\\bin\\Debug\\net10.0-windows\\video2.mp4"),
-                    CancellationTokenSource = new CancellationTokenSource(),
+                    CurrentStreamUri = "stream",
                     CameraName = "Подъезд"
                 }
             };
+            _apiService = new ApiService(new System.Net.Http.HttpClient());
             
         }
 
@@ -48,7 +46,7 @@ namespace YoloDetector.Models
         {
             foreach (var camera in Cameras)
             {
-                _ = camera.StartProcessFramesAsync();
+                _ = camera.StartProcessFramesAsync(_apiService);
             }
         }
 
@@ -65,12 +63,10 @@ namespace YoloDetector.Models
                 CameraStructure cameraStructure = new CameraStructure
                 {
                     CameraName = cameraName,
-                    CancellationTokenSource = new CancellationTokenSource(),
-                    Capture = new VideoCapture(videoPath),
+                    CurrentStreamUri = "stream",
                     CurrentFrame = null,
-                    IsPlaying = true
                 };
-                _ = cameraStructure.StartProcessFramesAsync();
+                _ = cameraStructure.StartProcessFramesAsync(_apiService);
                 Cameras.Add(cameraStructure);
                 return true;
             }

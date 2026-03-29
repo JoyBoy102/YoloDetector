@@ -1,11 +1,15 @@
 ﻿using Emgu.CV;
+using Emgu.CV.Structure;
+using MjpegProcessor;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using YoloDetector.Services;
 using YoloDetector.ViewModels;
 
@@ -13,27 +17,22 @@ namespace YoloDetector.Structures
 {
     public class CameraStructure : INotifyPropertyChanged
     {
-        public bool IsPlaying { get; set; }
         public string CameraName { get; set; }
         public BitmapSource CurrentFrame { get; set; }
 
-
-        public VideoCapture Capture { get; set; }
-
-        public CancellationTokenSource CancellationTokenSource;
+        public string CurrentStreamUri {  get; set; }
         
-        public async Task StartProcessFramesAsync()
+        public async Task StartProcessFramesAsync(ApiService apiService)
         {
-            var token = CancellationTokenSource.Token;
-            while (!token.IsCancellationRequested)
-            {
-                using (Mat frame = new Mat())
-                {
-                    Capture.Read(frame);
+            var capture = apiService.GetStream(CurrentStreamUri);
 
-                    if (!frame.IsEmpty)
+            while (true)
+            {
+                using (var mat = capture.QueryFrame())
+                {
+                    if (mat != null)
                     {
-                        var bitmapSource = FrameConverter.MatToBitmapSource(frame);
+                        var bitmapSource = FrameConverter.MatToBitmapSource(mat);
 
                         await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
@@ -41,15 +40,9 @@ namespace YoloDetector.Structures
                             OnPropertyChanged(nameof(CurrentFrame));
                         });
                     }
-                    else
-                    {
-                        await Task.Delay(10, token);
-                    }
                 }
-                await Task.Delay(33, token);
+                await Task.Delay(33);
             }
-            CurrentFrame = FrameConverter.CreateGrayBitmap(96, 96);
-            OnPropertyChanged(nameof(CurrentFrame));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -58,5 +51,6 @@ namespace YoloDetector.Structures
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
     }
 }

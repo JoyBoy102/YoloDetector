@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Text;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -87,6 +88,25 @@ namespace YoloDetector.Services
                 default:
                     return System.Windows.Media.PixelFormats.Bgr24;
             }
+        }
+
+        public static BitmapSource StreamToBitmapSource(Stream stream)
+        {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
+            // Сбрасываем позицию потока в начало
+            if (stream.CanSeek)
+                stream.Seek(0, SeekOrigin.Begin);
+
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.StreamSource = stream;
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.EndInit();
+            bitmap.Freeze(); // Для безопасного использования в разных потоках
+
+            return bitmap;
         }
 
     }
